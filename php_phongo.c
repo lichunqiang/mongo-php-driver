@@ -2615,6 +2615,8 @@ static void php_phongo_pclient_dtor(void *pp)
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(mongodb)
 {
+	zend_hash_init_ex(&MONGODB_G(pclients), 0, NULL, php_phongo_pclient_dtor, 1, 0);
+
 	/* Initialize HashTable for APM subscribers, which is initialized to NULL in
 	 * GINIT and destroyed and reset to NULL in RSHUTDOWN. */
 	if (MONGODB_G(subscribers) == NULL) {
@@ -2644,7 +2646,7 @@ PHP_GINIT_FUNCTION(mongodb)
 	mongodb_globals->bsonMemVTable = bsonMemVTable;
 
 	/* Initialize HashTable for persistent clients */
-	zend_hash_init_ex(&mongodb_globals->pclients, 0, NULL, php_phongo_pclient_dtor, 1, 0);
+	// zend_hash_init_ex(&mongodb_globals->pclients, 0, NULL, php_phongo_pclient_dtor, 1, 0);
 }
 /* }}} */
 
@@ -2798,7 +2800,7 @@ PHP_MSHUTDOWN_FUNCTION(mongodb)
 
 	/* Destroy HashTable for persistent clients. The HashTable destructor will
 	 * destroy any mongoc_client_t objects that were created by this process. */
-	zend_hash_destroy(&MONGODB_G(pclients));
+	// zend_hash_destroy(&MONGODB_G(pclients));
 
 	bson_mem_restore_vtable();
 	/* Cleanup after libmongoc */
@@ -2819,6 +2821,8 @@ PHP_RSHUTDOWN_FUNCTION(mongodb)
 		FREE_HASHTABLE(MONGODB_G(subscribers));
 		MONGODB_G(subscribers) = NULL;
 	}
+
+	zend_hash_destroy(&MONGODB_G(pclients));
 
 	return SUCCESS;
 }
